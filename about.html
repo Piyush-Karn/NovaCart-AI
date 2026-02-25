@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — NovaCart AI</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>" />
+</head>
+<body>
+
+  <!-- Animated background mesh -->
+  <div class="bg-mesh" aria-hidden="true"></div>
+
+  <!-- Particle canvas -->
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- ── PAGE WRAPPER ─────────────────────────────────────── -->
+  <div class="page page-fade">
+
+    <!-- ── NAVBAR ──────────────────────────────────────────── -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+      <a href="index.html" class="nav-logo">Nova<span>Cart</span> AI</a>
+
+      <ul class="nav-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+
+      <div class="nav-right">
+        <button class="cart-btn" aria-label="Shopping cart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          <span class="cart-count" aria-live="polite">0</span>
+        </button>
+        <button class="hamburger" aria-label="Toggle mobile menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Drawer -->
+    <div class="nav-drawer" role="dialog" aria-label="Mobile menu">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+
+    <!-- ── ABOUT CONTENT ─────────────────────────────────────── -->
+    <main class="about-content" aria-labelledby="mission-heading">
+
+      <!-- Mission block -->
+      <div class="mission-block">
+        <h1 id="mission-heading">Built to Reimagine<br>How the World Shops</h1>
+        <p>
+          NovaCart AI was founded in 2021 by a team of MIT researchers and Silicon Valley
+          veterans who believed commerce could be effortless, intelligent, and deeply personal.
+          We combine frontier AI with an obsessive attention to product quality and user
+          experience — so every interaction feels like it was designed just for you.
+        </p>
+      </div>
+
+      <!-- Feature cards grid -->
+      <div class="features-grid" role="list">
+
+        <!-- Card 1: AI Recommendations -->
+        <article class="feature-card glass-card" role="listitem">
+          <div class="feature-icon" aria-hidden="true">🧠</div>
+          <div>
+            <h3>AI Smart Recommendations</h3>
+            <p>
+              Our proprietary recommendation engine processes over 400 behavioural signals
+              per session to surface products that match your taste with uncanny precision —
+              learning and adapting with every interaction.
+            </p>
+          </div>
+        </article>
+
+        <!-- Card 2: Delivery -->
+        <article class="feature-card glass-card" role="listitem">
+          <div class="feature-icon" aria-hidden="true">⚡</div>
+          <div>
+            <h3>Lightning Fast Delivery</h3>
+            <p>
+              Powered by a predictive logistics network spanning 180 cities, we pre-position
+              your favourite products before you hit "order" — enabling same-day delivery
+              for 92% of our catalogue globally.
+            </p>
+          </div>
+        </article>
+
+        <!-- Card 3: Payments -->
+        <article class="feature-card glass-card" role="listitem">
+          <div class="feature-icon" aria-hidden="true">🔒</div>
+          <div>
+            <h3>Secure Blockchain Payments</h3>
+            <p>
+              Every transaction is cryptographically sealed on our distributed ledger —
+              eliminating fraud at the infrastructure level. Zero chargebacks. Zero
+              compromise. Full transparency from checkout to delivery.
+            </p>
+          </div>
+        </article>
+
+      </div><!-- /.features-grid -->
+
+      <!-- Stats row -->
+      <div class="stats-row" role="list" aria-label="Company statistics">
+        <div class="stat" role="listitem">
+          <div class="stat-num">2.4M+</div>
+          <div class="stat-label">Happy Customers</div>
+        </div>
+        <div class="stat" role="listitem">
+          <div class="stat-num">180</div>
+          <div class="stat-label">Cities Covered</div>
+        </div>
+        <div class="stat" role="listitem">
+          <div class="stat-num">99.9%</div>
+          <div class="stat-label">Uptime SLA</div>
+        </div>
+        <div class="stat" role="listitem">
+          <div class="stat-num">4.96★</div>
+          <div class="stat-label">Avg. Rating</div>
+        </div>
+      </div>
+
+    </main><!-- /.about-content -->
+
+    <!-- ── FOOTER BAR ────────────────────────────────────────── -->
+    <footer class="footer-bar" role="contentinfo">
+      <p>© 2025 NovaCart AI — All rights reserved.</p>
+      <ul class="footer-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="#" aria-label="Privacy Policy">Privacy</a></li>
+      </ul>
+    </footer>
+
+  </div><!-- /.page -->
+
+  <script src="script.js"></script>
+</body>
+</html>

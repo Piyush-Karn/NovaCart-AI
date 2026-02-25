@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — NovaCart AI</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>" />
+</head>
+<body>
+
+  <!-- Animated background mesh -->
+  <div class="bg-mesh" aria-hidden="true"></div>
+
+  <!-- Particle canvas -->
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+
+  <!-- ── PAGE WRAPPER ─────────────────────────────────────── -->
+  <div class="page page-fade">
+
+    <!-- ── NAVBAR ──────────────────────────────────────────── -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+      <a href="index.html" class="nav-logo">Nova<span>Cart</span> AI</a>
+
+      <ul class="nav-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+
+      <div class="nav-right">
+        <button class="cart-btn" aria-label="Shopping cart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          <span class="cart-count" aria-live="polite">0</span>
+        </button>
+        <button class="hamburger" aria-label="Toggle mobile menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Drawer -->
+    <div class="nav-drawer" role="dialog" aria-label="Mobile menu">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+
+    <!-- ── CONTACT CONTENT ───────────────────────────────────── -->
+    <main class="contact-content" aria-labelledby="contact-heading">
+
+      <!-- Left: Info column -->
+      <div class="contact-info">
+        <h1 id="contact-heading">Let's Build<br>Something<br>Extraordinary</h1>
+        <p>
+          Whether you're a brand looking to list your products on our AI-curated platform,
+          a developer eager to integrate our API, or a customer with a question — we'd love
+          to hear from you.
+        </p>
+
+        <div class="contact-details" role="list">
+          <div class="contact-detail" role="listitem">
+            <div class="contact-detail-icon" aria-hidden="true">📍</div>
+            <span>1 Infinite Loop, San Francisco, CA 94105</span>
+          </div>
+          <div class="contact-detail" role="listitem">
+            <div class="contact-detail-icon" aria-hidden="true">✉️</div>
+            <span>hello@novacart.ai</span>
+          </div>
+          <div class="contact-detail" role="listitem">
+            <div class="contact-detail-icon" aria-hidden="true">📞</div>
+            <span>+1 (888) NOVA-CART</span>
+          </div>
+          <div class="contact-detail" role="listitem">
+            <div class="contact-detail-icon" aria-hidden="true">💬</div>
+            <span>Live AI chat — avg. response: 12 seconds</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Form column -->
+      <div class="contact-form-wrap">
+        <form id="contact-form" class="contact-form" novalidate aria-label="Contact form">
+
+          <!-- Name field -->
+          <div class="field">
+            <input type="text" id="name" name="name" placeholder=" "
+                   autocomplete="name" aria-required="true" aria-label="Your full name" />
+            <label for="name">Full Name</label>
+          </div>
+
+          <!-- Email field -->
+          <div class="field">
+            <input type="email" id="email" name="email" placeholder=" "
+                   autocomplete="email" aria-required="true" aria-label="Your email address" />
+            <label for="email">Email Address</label>
+          </div>
+
+          <!-- Message field -->
+          <div class="field">
+            <textarea id="message" name="message" placeholder=" "
+                      aria-required="true" aria-label="Your message"></textarea>
+            <label for="message">Your Message</label>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">
+            Send Message
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+
+        </form>
+      </div>
+
+    </main><!-- /.contact-content -->
+
+    <!-- ── FOOTER BAR ────────────────────────────────────────── -->
+    <footer class="footer-bar" role="contentinfo">
+      <p>© 2025 NovaCart AI — All rights reserved.</p>
+      <ul class="footer-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="#" aria-label="Privacy Policy">Privacy</a></li>
+      </ul>
+    </footer>
+
+  </div><!-- /.page -->
+
+  <!-- ── SUCCESS MODAL ─────────────────────────────────────── -->
+  <div class="modal-overlay" id="success-modal" role="dialog"
+       aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
+    <div class="modal">
+      <div class="modal-icon" aria-hidden="true">🚀</div>
+      <h2 id="modal-title">Message Launched!</h2>
+      <p id="modal-desc">
+        Thanks for reaching out. Our AI-powered team will analyze your message and
+        get back to you within 24 hours — usually much sooner.
+      </p>
+      <button id="modal-close" class="btn-primary">Back to Exploring</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
