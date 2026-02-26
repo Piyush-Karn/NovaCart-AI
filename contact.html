@@ -7,29 +7,325 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>" />
+
+  <style>
+    html, body { overflow-x: hidden; overflow-y: auto; height: auto; }
+    .page { height: auto; min-height: 100vh; overflow: visible; display: flex; flex-direction: column; }
+
+    /* ── DECORATIVE ELEMENTS ─────────────────────────────── */
+    .orb {
+      position: fixed; pointer-events: none; z-index: 0;
+      border-radius: 50%; filter: blur(130px); opacity: 0;
+    }
+    .orb-a {
+      width: 700px; height: 700px;
+      top: -250px; left: -150px;
+      background: radial-gradient(circle, rgba(255,255,255,0.035) 0%, transparent 70%);
+    }
+    .orb-b {
+      width: 500px; height: 500px;
+      bottom: 50px; right: -100px;
+      background: radial-gradient(circle, rgba(255,255,255,0.025) 0%, transparent 70%);
+    }
+
+    /* ── CONTACT LAYOUT ──────────────────────────────────── */
+    .contact-content {
+      flex: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+      padding: clamp(4rem, 8vh, 7rem) clamp(2rem, 7vw, 7rem);
+      gap: clamp(4rem, 8vw, 9rem);
+      position: relative; z-index: 1;
+    }
+
+    /* ── INFO COLUMN ─────────────────────────────────────── */
+    .contact-info { position: sticky; top: 6rem; }
+
+    .contact-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      font-size: 0.68rem; font-weight: 500; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--text-muted);
+      border: 1px solid var(--border); border-radius: var(--radius-pill);
+      padding: 0.4rem 1.1rem; margin-bottom: 2rem;
+      opacity: 0;
+    }
+    .contact-eyebrow .live-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #4ade80; box-shadow: 0 0 8px rgba(74,222,128,0.6);
+      animation: live-pulse 1.8s ease infinite;
+    }
+    @keyframes live-pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.5); }
+    }
+
+    .contact-info h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 4.5vw, 4.2rem);
+      font-weight: 700; letter-spacing: -0.04em; line-height: 1.08;
+      background: linear-gradient(160deg, #FFFFFF 30%, #555 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 1.5rem; opacity: 0;
+    }
+
+    .contact-info > p {
+      color: var(--text-muted); font-weight: 300; font-size: 1rem;
+      line-height: 1.75; max-width: 380px; margin-bottom: 3rem;
+      opacity: 0;
+    }
+
+    /* ── CONTACT DETAIL CARDS ────────────────────────────── */
+    .contact-details { display: flex; flex-direction: column; gap: 0.8rem; }
+    .contact-detail {
+      display: flex; align-items: center; gap: 1.2rem;
+      padding: 1.1rem 1.4rem;
+      background: var(--bg-glass);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: default; opacity: 0; transform: translateX(-20px);
+    }
+    .contact-detail:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.1);
+      transform: translateX(4px) !important;
+    }
+    .contact-detail-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .contact-detail-text { display: flex; flex-direction: column; gap: 2px; }
+    .contact-detail-label {
+      font-size: 0.62rem; font-weight: 500; letter-spacing: 0.15em;
+      text-transform: uppercase; color: rgba(255,255,255,0.25);
+    }
+    .contact-detail-value {
+      font-size: 0.88rem; color: var(--text-muted); font-weight: 300;
+    }
+
+    /* ── FORM COLUMN ─────────────────────────────────────── */
+    .contact-form-wrap {
+      opacity: 0; transform: translateY(30px);
+    }
+
+    .contact-form {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(2rem, 3.5vw, 3.5rem);
+      display: flex; flex-direction: column; gap: 1.4rem;
+      position: relative; overflow: hidden;
+    }
+    .contact-form::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+    }
+
+    .form-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem; font-weight: 500; letter-spacing: -0.02em;
+      color: var(--text-light); margin-bottom: 0.5rem;
+    }
+    .form-subtitle {
+      font-size: 0.82rem; color: var(--text-muted); font-weight: 300;
+      margin-bottom: 0.5rem; margin-top: -0.5rem;
+    }
+
+    /* ── FLOATING LABEL FIELDS ───────────────────────────── */
+    .field {
+      position: relative;
+    }
+    .field input,
+    .field textarea {
+      width: 100%;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1.5rem 1.2rem 0.7rem;
+      font-family: var(--font-body);
+      font-size: 0.9rem; font-weight: 300;
+      color: var(--text-light);
+      outline: none;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      caret-color: var(--text-light);
+    }
+    .field textarea {
+      resize: none; min-height: 130px; line-height: 1.6;
+    }
+    .field input::placeholder, .field textarea::placeholder { color: transparent; }
+    .field input:focus, .field textarea:focus {
+      border-color: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.04);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.03);
+    }
+
+    .field label {
+      position: absolute;
+      left: 1.2rem; top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.88rem; font-weight: 300;
+      color: rgba(255,255,255,0.3);
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .field textarea + label { top: 1.3rem; transform: none; }
+
+    .field input:focus ~ label,
+    .field input:not(:placeholder-shown) ~ label {
+      top: 0.65rem; transform: none;
+      font-size: 0.65rem; letter-spacing: 0.06em;
+      color: rgba(255,255,255,0.35);
+    }
+    .field textarea:focus ~ label,
+    .field textarea:not(:placeholder-shown) ~ label {
+      top: 0.65rem;
+      font-size: 0.65rem; letter-spacing: 0.06em;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* Focus ring accent bar */
+    .field::after {
+      content: ''; position: absolute;
+      bottom: 1px; left: 12px; right: 12px; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.25), transparent);
+      opacity: 0; border-radius: 0 0 12px 12px;
+      transition: opacity 0.4s;
+    }
+    .field:focus-within::after { opacity: 1; }
+
+    /* ── SUBMIT BUTTON ───────────────────────────────────── */
+    .btn-submit {
+      display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+      width: 100%; padding: 1rem 2rem;
+      font-family: var(--font-body); font-size: 0.9rem; font-weight: 500;
+      color: #000;
+      background: #fff;
+      border: none; border-radius: var(--radius-pill);
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-submit .btn-shimmer {
+      position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.4) 50%, transparent 60%);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+    .btn-submit:hover .btn-shimmer { transform: translateX(100%); }
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(255,255,255,0.15);
+    }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit .btn-icon {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-submit:hover .btn-icon { transform: translateX(4px); }
+
+    /* ── FORM STATUS ─────────────────────────────────────── */
+    .form-status {
+      font-size: 0.8rem; color: rgba(255,255,255,0.2); text-align: center;
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .form-status .status-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: #4ade80; box-shadow: 0 0 6px rgba(74,222,128,0.5);
+    }
+
+    /* ── SUCCESS MODAL ───────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: rgba(10,10,10,0.95);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 3.5rem;
+      max-width: 460px; width: 90%;
+      text-align: center;
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative; overflow: hidden;
+    }
+    .modal::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent);
+    }
+    .modal-overlay.show .modal { transform: scale(1) translateY(0); }
+
+    .modal-icon {
+      font-size: 3rem; margin-bottom: 1.5rem;
+      display: block;
+      animation: float-icon 3s ease infinite;
+    }
+    @keyframes float-icon {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      50%      { transform: translateY(-8px) rotate(5deg); }
+    }
+
+    .modal h2 {
+      font-family: var(--font-display); font-size: 1.8rem;
+      font-weight: 700; letter-spacing: -0.03em;
+      color: var(--text-light); margin-bottom: 1rem;
+    }
+    .modal p {
+      color: var(--text-muted); font-size: 0.9rem; line-height: 1.7;
+      font-weight: 300; margin-bottom: 2rem;
+    }
+
+    /* ── FOOTER ───────────────────────────────────────────── */
+    .footer-bar { flex-shrink: 0; }
+
+    /* ── RESPONSIVE ───────────────────────────────────────── */
+    @media (max-width: 860px) {
+      .contact-content {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+      .contact-info { position: static; }
+      .contact-info h1 { font-size: clamp(2.2rem, 6vw, 3rem); }
+      .hamburger { display: flex !important; }
+      .nav-links  { display: none !important; }
+      .nav-drawer { display: block !important; }
+    }
+
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 7px); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -7px); }
+    @media (min-width: 861px) { .hamburger { display: none; } }
+  </style>
 </head>
 <body>
 
-  <!-- Animated background mesh -->
   <div class="bg-mesh" aria-hidden="true"></div>
-
-  <!-- Particle canvas -->
   <canvas id="particles-canvas" aria-hidden="true"></canvas>
 
-  <!-- ── PAGE WRAPPER ─────────────────────────────────────── -->
-  <div class="page page-fade">
+  <div class="orb orb-a" aria-hidden="true"></div>
+  <div class="orb orb-b" aria-hidden="true"></div>
 
-    <!-- ── NAVBAR ──────────────────────────────────────────── -->
+  <div class="page">
+
+    <!-- NAVBAR -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
       <a href="index.html" class="nav-logo">Nova<span>Cart</span> AI</a>
-
       <ul class="nav-links" role="list">
         <li><a href="index.html">Home</a></li>
         <li><a href="about.html">About</a></li>
-        <li><a href="contact.html">Contact</a></li>
+        <li><a href="contact.html" class="active">Contact</a></li>
       </ul>
-
       <div class="nav-right">
         <button class="cart-btn" aria-label="Shopping cart">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -45,7 +341,6 @@
       </div>
     </nav>
 
-    <!-- Mobile Drawer -->
     <div class="nav-drawer" role="dialog" aria-label="Mobile menu">
       <ul>
         <li><a href="index.html">Home</a></li>
@@ -54,79 +349,104 @@
       </ul>
     </div>
 
-    <!-- ── CONTACT CONTENT ───────────────────────────────────── -->
+    <!-- MAIN CONTENT -->
     <main class="contact-content" aria-labelledby="contact-heading">
 
-      <!-- Left: Info column -->
+      <!-- Info Column -->
       <div class="contact-info">
+        <div class="contact-eyebrow">
+          <div class="live-dot"></div>
+          AI Support Online
+        </div>
+
         <h1 id="contact-heading">Let's Build<br>Something<br>Extraordinary</h1>
+
         <p>
-          Whether you're a brand looking to list your products on our AI-curated platform,
-          a developer eager to integrate our API, or a customer with a question — we'd love
-          to hear from you.
+          Whether you're a brand looking to list products on our AI-curated platform,
+          a developer eager to integrate our API, or simply have a question — we'd
+          love to hear from you.
         </p>
 
         <div class="contact-details" role="list">
           <div class="contact-detail" role="listitem">
             <div class="contact-detail-icon" aria-hidden="true">📍</div>
-            <span>1 Infinite Loop, San Francisco, CA 94105</span>
+            <div class="contact-detail-text">
+              <span class="contact-detail-label">Address</span>
+              <span class="contact-detail-value">1 Infinite Loop, San Francisco, CA 94105</span>
+            </div>
           </div>
           <div class="contact-detail" role="listitem">
             <div class="contact-detail-icon" aria-hidden="true">✉️</div>
-            <span>hello@novacart.ai</span>
+            <div class="contact-detail-text">
+              <span class="contact-detail-label">Email</span>
+              <span class="contact-detail-value">hello@novacart.ai</span>
+            </div>
           </div>
           <div class="contact-detail" role="listitem">
             <div class="contact-detail-icon" aria-hidden="true">📞</div>
-            <span>+1 (888) NOVA-CART</span>
+            <div class="contact-detail-text">
+              <span class="contact-detail-label">Phone</span>
+              <span class="contact-detail-value">+1 (888) NOVA-CART</span>
+            </div>
           </div>
           <div class="contact-detail" role="listitem">
             <div class="contact-detail-icon" aria-hidden="true">💬</div>
-            <span>Live AI chat — avg. response: 12 seconds</span>
+            <div class="contact-detail-text">
+              <span class="contact-detail-label">Live Chat</span>
+              <span class="contact-detail-value">AI response in ~12 seconds</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Right: Form column -->
+      <!-- Form Column -->
       <div class="contact-form-wrap">
         <form id="contact-form" class="contact-form" novalidate aria-label="Contact form">
 
-          <!-- Name field -->
+          <div>
+            <p class="form-title">Send a message</p>
+            <p class="form-subtitle">We'll get back within 24 hours — usually much sooner.</p>
+          </div>
+
           <div class="field">
             <input type="text" id="name" name="name" placeholder=" "
-                   autocomplete="name" aria-required="true" aria-label="Your full name" />
+                   autocomplete="name" aria-required="true" />
             <label for="name">Full Name</label>
           </div>
 
-          <!-- Email field -->
           <div class="field">
             <input type="email" id="email" name="email" placeholder=" "
-                   autocomplete="email" aria-required="true" aria-label="Your email address" />
+                   autocomplete="email" aria-required="true" />
             <label for="email">Email Address</label>
           </div>
 
-          <!-- Message field -->
           <div class="field">
             <textarea id="message" name="message" placeholder=" "
-                      aria-required="true" aria-label="Your message"></textarea>
+                      aria-required="true"></textarea>
             <label for="message">Your Message</label>
           </div>
 
-          <!-- Submit -->
-          <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">
+          <button type="submit" class="btn-submit">
+            <div class="btn-shimmer"></div>
             Send Message
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg class="btn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true">
               <line x1="22" y1="2" x2="11" y2="13"/>
               <polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
           </button>
 
+          <div class="form-status">
+            <div class="status-dot"></div>
+            All systems operational · Encrypted end-to-end
+          </div>
+
         </form>
       </div>
 
-    </main><!-- /.contact-content -->
+    </main>
 
-    <!-- ── FOOTER BAR ────────────────────────────────────────── -->
     <footer class="footer-bar" role="contentinfo">
       <p>© 2025 NovaCart AI — All rights reserved.</p>
       <ul class="footer-links" role="list">
@@ -136,22 +456,112 @@
       </ul>
     </footer>
 
-  </div><!-- /.page -->
+  </div>
 
-  <!-- ── SUCCESS MODAL ─────────────────────────────────────── -->
+  <!-- Success Modal -->
   <div class="modal-overlay" id="success-modal" role="dialog"
        aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
     <div class="modal">
-      <div class="modal-icon" aria-hidden="true">🚀</div>
+      <span class="modal-icon" aria-hidden="true">🚀</span>
       <h2 id="modal-title">Message Launched!</h2>
       <p id="modal-desc">
-        Thanks for reaching out. Our AI-powered team will analyze your message and
-        get back to you within 24 hours — usually much sooner.
+        Thanks for reaching out. Our AI-powered team will analyze your message
+        and get back to you within 24 hours — usually much sooner.
       </p>
-      <button id="modal-close" class="btn-primary">Back to Exploring</button>
+      <button id="modal-close" class="btn-primary" style="justify-content:center; width:100%;">
+        Back to Exploring
+      </button>
     </div>
   </div>
 
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
   <script src="script.js"></script>
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ── Orbs
+    gsap.to('.orb', { opacity: 1, duration: 2.5, ease: 'power2.out', delay: 0.2 });
+
+    // ── Hero sequence
+    const tl = gsap.timeline({ delay: 0.15 });
+    tl.to('.contact-eyebrow', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 0)
+      .from('.contact-eyebrow', { y: 14 }, 0)
+      .to('#contact-heading',   { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' }, 0.12)
+      .from('#contact-heading', { y: 28 }, 0.12)
+      .to('.contact-info > p',  { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 0.25)
+      .from('.contact-info > p',{ y: 18 }, 0.25)
+      // Detail cards slide in staggered
+      .to('.contact-detail', {
+        opacity: 1, x: 0, duration: 0.7, stagger: 0.1, ease: 'power3.out'
+      }, 0.35);
+
+    // ── Form slides in
+    tl.to('.contact-form-wrap', {
+      opacity: 1, y: 0, duration: 1, ease: 'power3.out'
+    }, 0.3);
+
+    // ── Hover: detail cards subtle magnetic
+    document.querySelectorAll('.contact-detail').forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        gsap.to(card, { x: 4, duration: 0.4, ease: 'power2.out' });
+      });
+      card.addEventListener('mouseleave', () => {
+        gsap.to(card, { x: 0, duration: 0.6, ease: 'elastic.out(1, 0.5)' });
+      });
+    });
+
+    // ── Form field focus effects
+    document.querySelectorAll('.field input, .field textarea').forEach(el => {
+      el.addEventListener('focus', () => {
+        gsap.to(el.closest('.field'), { scale: 1.01, duration: 0.3, ease: 'power2.out' });
+      });
+      el.addEventListener('blur', () => {
+        gsap.to(el.closest('.field'), { scale: 1, duration: 0.4, ease: 'elastic.out(1, 0.6)' });
+      });
+    });
+
+    // ── Form submit
+    const form    = document.getElementById('contact-form');
+    const modal   = document.getElementById('success-modal');
+    const mClose  = document.getElementById('modal-close');
+
+    form?.addEventListener('submit', e => {
+      e.preventDefault();
+      const btn = form.querySelector('.btn-submit');
+      
+      // Animate button
+      gsap.to(btn, { scale: 0.97, duration: 0.1, yoyo: true, repeat: 1 });
+      
+      setTimeout(() => {
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }, 200);
+    });
+
+    mClose?.addEventListener('click', () => {
+      modal.classList.remove('show');
+      document.body.style.overflow = '';
+      form?.reset();
+    });
+
+    modal?.addEventListener('click', e => {
+      if (e.target === modal) {
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+
+    // ── Hamburger
+    const hamburger = document.querySelector('.hamburger');
+    const drawer    = document.querySelector('.nav-drawer');
+    hamburger?.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      drawer.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', hamburger.classList.contains('active'));
+    });
+  </script>
 </body>
 </html>

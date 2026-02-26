@@ -7,29 +7,302 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>" />
+
+  <style>
+    html, body { overflow-x: hidden; overflow-y: auto; height: auto; }
+    .page { height: auto; min-height: 100vh; overflow: visible; display: flex; flex-direction: column; }
+
+    /* ── ABOUT OVERRIDES ─────────────────────────────────── */
+    .about-content {
+      flex: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: clamp(4rem, 8vh, 7rem) clamp(1.5rem, 6vw, 6rem);
+      gap: 0;
+      overflow: visible;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── DECORATIVE ORBS ─────────────────────────────────── */
+    .orb {
+      position: fixed; pointer-events: none; z-index: 0;
+      border-radius: 50%; filter: blur(120px); opacity: 0;
+    }
+    .orb-1 {
+      width: 600px; height: 600px;
+      top: -200px; right: -150px;
+      background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
+    }
+    .orb-2 {
+      width: 500px; height: 500px;
+      bottom: 100px; left: -100px;
+      background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+    }
+
+    /* ── HERO SECTION ────────────────────────────────────── */
+    .about-hero {
+      text-align: center;
+      max-width: 780px;
+      margin-bottom: clamp(5rem, 10vh, 8rem);
+      position: relative;
+    }
+
+    .about-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      font-size: 0.7rem; font-weight: 500; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--text-muted);
+      border: 1px solid var(--border); border-radius: var(--radius-pill);
+      padding: 0.45rem 1.2rem; margin-bottom: 2rem;
+      opacity: 0;
+    }
+    .about-eyebrow .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--text-muted); animation: pulse-dot 2s ease infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(0.6); }
+    }
+
+    .about-hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 6vw, 5.5rem);
+      font-weight: 700; line-height: 1.05; letter-spacing: -0.04em;
+      background: linear-gradient(160deg, #FFFFFF 30%, #555 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 1.8rem; opacity: 0;
+    }
+
+    .about-hero p {
+      color: var(--text-muted); font-size: clamp(1rem, 1.3vw, 1.15rem);
+      font-weight: 300; line-height: 1.75; max-width: 600px; margin: 0 auto;
+      opacity: 0;
+    }
+
+    /* ── DIVIDER ─────────────────────────────────────────── */
+    .section-divider {
+      width: 100%; max-width: 1100px;
+      display: flex; align-items: center; gap: 2rem;
+      margin-bottom: clamp(3rem, 6vh, 5rem);
+      opacity: 0;
+    }
+    .section-divider .line {
+      flex: 1; height: 1px;
+      background: linear-gradient(to right, transparent, var(--border), transparent);
+    }
+    .section-divider .label {
+      font-size: 0.65rem; font-weight: 500; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ── FEATURES GRID ────────────────────────────────────── */
+    .features-grid-wrap {
+      width: 100%; max-width: 1100px;
+      margin-bottom: clamp(5rem, 10vh, 8rem);
+    }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: clamp(1rem, 2vw, 1.5rem);
+      width: 100%;
+    }
+
+    .feature-card {
+      padding: clamp(2rem, 3vw, 2.8rem);
+      display: flex; flex-direction: column; gap: 1.5rem;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: default; position: relative; overflow: hidden;
+      opacity: 0; transform: translateY(30px);
+    }
+    .feature-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.12), transparent);
+      opacity: 0; transition: opacity 0.5s;
+    }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-card:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.12);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06);
+      transform: translateY(-6px) !important;
+    }
+
+    .feature-icon-wrap {
+      width: 52px; height: 52px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .feature-card:hover .feature-icon-wrap {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.15);
+      transform: scale(1.08) rotate(-3deg);
+    }
+
+    .feature-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.15rem; font-weight: 500; letter-spacing: -0.02em;
+      margin-bottom: 0.6rem; color: var(--text-light);
+    }
+    .feature-card p {
+      font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; font-weight: 300;
+    }
+
+    .feature-tag {
+      display: inline-flex; align-items: center;
+      font-size: 0.62rem; font-weight: 500; letter-spacing: 0.12em;
+      text-transform: uppercase; color: rgba(255,255,255,0.3);
+      padding: 0.3rem 0.8rem;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-pill);
+      width: fit-content; margin-top: auto;
+    }
+
+    /* ── STATS SECTION ────────────────────────────────────── */
+    .stats-section {
+      width: 100%; max-width: 1100px;
+      margin-bottom: clamp(5rem, 10vh, 8rem);
+    }
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .stat-cell {
+      background: var(--bg);
+      padding: clamp(2rem, 3.5vw, 3.5rem) clamp(1.5rem, 3vw, 3rem);
+      display: flex; flex-direction: column; gap: 0.5rem;
+      position: relative; overflow: hidden;
+      opacity: 0; transform: translateY(20px);
+    }
+    .stat-cell::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(255,255,255,0.0); transition: background 0.5s;
+    }
+    .stat-cell:hover::after { background: rgba(255,255,255,0.015); }
+
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 3.5vw, 3.2rem);
+      font-weight: 700; letter-spacing: -0.04em;
+      color: var(--text-light); line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.8rem; color: var(--text-muted); font-weight: 400;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── TIMELINE / STORY SECTION ──────────────────────────── */
+    .story-section {
+      width: 100%; max-width: 1100px;
+      margin-bottom: clamp(5rem, 10vh, 8rem);
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: clamp(3rem, 6vw, 7rem); align-items: center;
+    }
+    .story-text { opacity: 0; transform: translateX(-30px); }
+    .story-text h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-weight: 700; letter-spacing: -0.03em; line-height: 1.2;
+      color: var(--text-light); margin-bottom: 1.5rem;
+    }
+    .story-text p {
+      color: var(--text-muted); font-size: 0.95rem; line-height: 1.8;
+      font-weight: 300; margin-bottom: 1.2rem;
+    }
+    .story-timeline { display: flex; flex-direction: column; gap: 0; }
+    .timeline-item {
+      display: flex; gap: 1.5rem; position: relative;
+      padding-bottom: 2.5rem;
+      opacity: 0; transform: translateX(30px);
+    }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-left {
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+      flex-shrink: 0;
+    }
+    .tl-dot {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 600; color: var(--text-muted);
+      font-family: var(--font-display); flex-shrink: 0;
+      transition: all 0.4s;
+    }
+    .timeline-item:hover .tl-dot {
+      background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2);
+      color: var(--text-light);
+    }
+    .tl-line {
+      width: 1px; flex: 1; min-height: 30px;
+      background: linear-gradient(to bottom, var(--border), transparent);
+      margin: 4px 0;
+    }
+    .tl-content { padding-top: 0.4rem; }
+    .tl-year {
+      font-size: 0.65rem; font-weight: 500; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem;
+    }
+    .tl-content h4 {
+      font-family: var(--font-display); font-size: 1rem; font-weight: 500;
+      color: var(--text-light); margin-bottom: 0.4rem;
+    }
+    .tl-content p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; font-weight: 300; }
+
+    /* ── FOOTER ───────────────────────────────────────────── */
+    .footer-bar { flex-shrink: 0; }
+
+    /* ── RESPONSIVE ───────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .story-section { grid-template-columns: 1fr; }
+      .story-text { transform: translateY(30px) !important; }
+      .timeline-item { transform: translateX(0) translateY(30px) !important; }
+      .hamburger { display: flex !important; }
+      .nav-links { display: none !important; }
+      .nav-drawer { display: block !important; }
+    }
+
+    /* Hamburger active state */
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 7px); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -7px); }
+    @media (min-width: 901px) { .hamburger { display: none; } }
+  </style>
 </head>
 <body>
 
-  <!-- Animated background mesh -->
   <div class="bg-mesh" aria-hidden="true"></div>
-
-  <!-- Particle canvas -->
   <canvas id="particles-canvas" aria-hidden="true"></canvas>
 
-  <!-- ── PAGE WRAPPER ─────────────────────────────────────── -->
-  <div class="page page-fade">
+  <!-- Decorative orbs -->
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
 
-    <!-- ── NAVBAR ──────────────────────────────────────────── -->
+  <div class="page">
+
+    <!-- NAVBAR -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
       <a href="index.html" class="nav-logo">Nova<span>Cart</span> AI</a>
-
       <ul class="nav-links" role="list">
         <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
+        <li><a href="about.html" class="active">About</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
-
       <div class="nav-right">
         <button class="cart-btn" aria-label="Shopping cart">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -45,7 +318,6 @@
       </div>
     </nav>
 
-    <!-- Mobile Drawer -->
     <div class="nav-drawer" role="dialog" aria-label="Mobile menu">
       <ul>
         <li><a href="index.html">Home</a></li>
@@ -54,87 +326,172 @@
       </ul>
     </div>
 
-    <!-- ── ABOUT CONTENT ─────────────────────────────────────── -->
+    <!-- MAIN CONTENT -->
     <main class="about-content" aria-labelledby="mission-heading">
 
-      <!-- Mission block -->
-      <div class="mission-block">
+      <!-- Hero -->
+      <div class="about-hero">
+        <div class="about-eyebrow" id="eyebrow">
+          <div class="dot"></div>
+          Founded 2021 · San Francisco
+        </div>
         <h1 id="mission-heading">Built to Reimagine<br>How the World Shops</h1>
         <p>
-          NovaCart AI was founded in 2021 by a team of MIT researchers and Silicon Valley
-          veterans who believed commerce could be effortless, intelligent, and deeply personal.
-          We combine frontier AI with an obsessive attention to product quality and user
-          experience — so every interaction feels like it was designed just for you.
+          NovaCart AI was founded by MIT researchers and Silicon Valley veterans who believed
+          commerce could be effortless, intelligent, and deeply personal. We combine frontier AI
+          with an obsessive attention to quality — so every interaction feels designed just for you.
         </p>
       </div>
 
-      <!-- Feature cards grid -->
-      <div class="features-grid" role="list">
+      <!-- Divider -->
+      <div class="section-divider">
+        <div class="line"></div>
+        <span class="label">Core Capabilities</span>
+        <div class="line"></div>
+      </div>
 
-        <!-- Card 1: AI Recommendations -->
-        <article class="feature-card glass-card" role="listitem">
-          <div class="feature-icon" aria-hidden="true">🧠</div>
-          <div>
-            <h3>AI Smart Recommendations</h3>
-            <p>
-              Our proprietary recommendation engine processes over 400 behavioural signals
-              per session to surface products that match your taste with uncanny precision —
-              learning and adapting with every interaction.
-            </p>
-          </div>
-        </article>
+      <!-- Features Grid -->
+      <div class="features-grid-wrap">
+        <div class="features-grid" role="list">
 
-        <!-- Card 2: Delivery -->
-        <article class="feature-card glass-card" role="listitem">
-          <div class="feature-icon" aria-hidden="true">⚡</div>
-          <div>
-            <h3>Lightning Fast Delivery</h3>
-            <p>
-              Powered by a predictive logistics network spanning 180 cities, we pre-position
-              your favourite products before you hit "order" — enabling same-day delivery
-              for 92% of our catalogue globally.
-            </p>
-          </div>
-        </article>
+          <article class="feature-card" role="listitem">
+            <div class="feature-icon-wrap" aria-hidden="true">🧠</div>
+            <div>
+              <h3>AI Smart Recommendations</h3>
+              <p>Our proprietary recommendation engine processes over 400 behavioural signals per session,
+                surfacing products that match your taste with uncanny precision — learning with every interaction.</p>
+            </div>
+            <span class="feature-tag">Recommendation Engine v4</span>
+          </article>
 
-        <!-- Card 3: Payments -->
-        <article class="feature-card glass-card" role="listitem">
-          <div class="feature-icon" aria-hidden="true">🔒</div>
-          <div>
-            <h3>Secure Blockchain Payments</h3>
-            <p>
-              Every transaction is cryptographically sealed on our distributed ledger —
-              eliminating fraud at the infrastructure level. Zero chargebacks. Zero
-              compromise. Full transparency from checkout to delivery.
-            </p>
-          </div>
-        </article>
+          <article class="feature-card" role="listitem">
+            <div class="feature-icon-wrap" aria-hidden="true">⚡</div>
+            <div>
+              <h3>Lightning Fast Delivery</h3>
+              <p>Powered by a predictive logistics network spanning 180 cities, we pre-position your favourite
+                products before you hit "order" — enabling same-day delivery for 92% of our catalogue globally.</p>
+            </div>
+            <span class="feature-tag">Predictive Logistics</span>
+          </article>
 
-      </div><!-- /.features-grid -->
+          <article class="feature-card" role="listitem">
+            <div class="feature-icon-wrap" aria-hidden="true">🔒</div>
+            <div>
+              <h3>Secure Blockchain Payments</h3>
+              <p>Every transaction is cryptographically sealed on our distributed ledger — eliminating fraud at
+                the infrastructure level. Zero chargebacks. Zero compromise. Full transparency.</p>
+            </div>
+            <span class="feature-tag">Distributed Ledger</span>
+          </article>
 
-      <!-- Stats row -->
-      <div class="stats-row" role="list" aria-label="Company statistics">
-        <div class="stat" role="listitem">
-          <div class="stat-num">2.4M+</div>
-          <div class="stat-label">Happy Customers</div>
-        </div>
-        <div class="stat" role="listitem">
-          <div class="stat-num">180</div>
-          <div class="stat-label">Cities Covered</div>
-        </div>
-        <div class="stat" role="listitem">
-          <div class="stat-num">99.9%</div>
-          <div class="stat-label">Uptime SLA</div>
-        </div>
-        <div class="stat" role="listitem">
-          <div class="stat-num">4.96★</div>
-          <div class="stat-label">Avg. Rating</div>
         </div>
       </div>
 
-    </main><!-- /.about-content -->
+      <!-- Divider -->
+      <div class="section-divider" style="margin-bottom: clamp(3rem,6vh,5rem)">
+        <div class="line"></div>
+        <span class="label">By the Numbers</span>
+        <div class="line"></div>
+      </div>
 
-    <!-- ── FOOTER BAR ────────────────────────────────────────── -->
+      <!-- Stats -->
+      <div class="stats-section">
+        <div class="stats-grid" role="list" aria-label="Company statistics">
+          <div class="stat-cell" role="listitem">
+            <div class="stat-num" data-count="2400000" data-suffix="M+" data-display="2.4M+">2.4M+</div>
+            <div class="stat-label">Happy Customers</div>
+          </div>
+          <div class="stat-cell" role="listitem">
+            <div class="stat-num" data-count="180" data-suffix="">180</div>
+            <div class="stat-label">Cities Covered</div>
+          </div>
+          <div class="stat-cell" role="listitem">
+            <div class="stat-num" data-count="99.9" data-suffix="%">99.9%</div>
+            <div class="stat-label">Uptime SLA</div>
+          </div>
+          <div class="stat-cell" role="listitem">
+            <div class="stat-num" data-count="4.96" data-suffix="★">4.96★</div>
+            <div class="stat-label">Avg. Rating</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="section-divider" style="margin-bottom: clamp(3rem,6vh,5rem)">
+        <div class="line"></div>
+        <span class="label">Our Journey</span>
+        <div class="line"></div>
+      </div>
+
+      <!-- Story + Timeline -->
+      <div class="story-section">
+        <div class="story-text">
+          <h2>Four years building<br>the impossible</h2>
+          <p>
+            What started as a research project at MIT's CSAIL lab has grown into the world's most
+            sophisticated AI commerce platform. Every feature, every model, every design decision
+            has been obsessively crafted to serve one goal — making shopping feel magical.
+          </p>
+          <p>
+            We're not just building faster e-commerce. We're redefining the relationship between
+            people and the products they love, using AI as the bridge.
+          </p>
+          <a href="contact.html" class="btn-primary" style="margin-top:1rem;">Get in Touch</a>
+        </div>
+
+        <div class="story-timeline">
+          <div class="timeline-item">
+            <div class="timeline-left">
+              <div class="tl-dot">21</div>
+              <div class="tl-line"></div>
+            </div>
+            <div class="tl-content">
+              <div class="tl-year">2021</div>
+              <h4>Founded at MIT</h4>
+              <p>Team of six researchers and engineers begin building the recommendation core.</p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-left">
+              <div class="tl-dot">22</div>
+              <div class="tl-line"></div>
+            </div>
+            <div class="tl-content">
+              <div class="tl-year">2022</div>
+              <h4>Series A · $24M</h4>
+              <p>Launched beta with 50,000 users. First same-day delivery powered by predictive AI.</p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-left">
+              <div class="tl-dot">23</div>
+              <div class="tl-line"></div>
+            </div>
+            <div class="tl-content">
+              <div class="tl-year">2023</div>
+              <h4>Global Expansion</h4>
+              <p>Reached 100 cities. Launched blockchain payment layer. 1M users milestone.</p>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-left">
+              <div class="tl-dot">24</div>
+              <div class="tl-line"></div>
+            </div>
+            <div class="tl-content">
+              <div class="tl-year">2024–Now</div>
+              <h4>2.4M+ Customers</h4>
+              <p>180 cities, 4.96★ average rating. Expanding into AR shopping and voice commerce.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
     <footer class="footer-bar" role="contentinfo">
       <p>© 2025 NovaCart AI — All rights reserved.</p>
       <ul class="footer-links" role="list">
@@ -144,8 +501,100 @@
       </ul>
     </footer>
 
-  </div><!-- /.page -->
+  </div>
+
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 
   <script src="script.js"></script>
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ── Orbs fade in
+    gsap.to('.orb', { opacity: 1, duration: 2, ease: 'power2.out', delay: 0.3 });
+
+    // ── Hero sequence
+    const tl = gsap.timeline({ delay: 0.2 });
+    tl.to('#eyebrow',        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 0)
+      .from('#eyebrow',      { y: 16 }, 0)
+      .to('#mission-heading',{ opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' }, 0.15)
+      .from('#mission-heading', { y: 24 }, 0.15)
+      .to('.about-hero p',   { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 0.3)
+      .from('.about-hero p', { y: 18 }, 0.3);
+
+    // ── Section dividers
+    gsap.utils.toArray('.section-divider').forEach((el, i) => {
+      gsap.to(el, {
+        opacity: 1, duration: 1, ease: 'power2.out',
+        scrollTrigger: { trigger: el, start: 'top 85%' }
+      });
+    });
+
+    // ── Feature cards stagger
+    gsap.to('.feature-card', {
+      opacity: 1, y: 0, duration: 0.9, stagger: 0.15, ease: 'power3.out',
+      scrollTrigger: { trigger: '.features-grid', start: 'top 80%' }
+    });
+
+    // ── Stat cells stagger + counter animation
+    gsap.to('.stat-cell', {
+      opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: 'power3.out',
+      scrollTrigger: {
+        trigger: '.stats-grid', start: 'top 80%',
+        onEnter: () => animateCounters()
+      }
+    });
+
+    function animateCounters() {
+      document.querySelectorAll('.stat-num').forEach(el => {
+        const target = parseFloat(el.dataset.count);
+        const suffix = el.dataset.suffix || '';
+        const display = el.dataset.display;
+        if (display) { el.textContent = display; return; } // already formatted nicely
+        const isFloat = !Number.isInteger(target);
+
+        gsap.fromTo({ val: 0 }, { val: target }, {
+          duration: 2, ease: 'power2.out',
+          onUpdate: function() {
+            el.textContent = (isFloat ? this.targets()[0].val.toFixed(1) : Math.round(this.targets()[0].val)) + suffix;
+          }
+        });
+      });
+    }
+
+    // ── Story section
+    gsap.to('.story-text', {
+      opacity: 1, x: 0, duration: 1, ease: 'power3.out',
+      scrollTrigger: { trigger: '.story-section', start: 'top 75%' }
+    });
+
+    gsap.to('.timeline-item', {
+      opacity: 1, x: 0, duration: 0.8, stagger: 0.15, ease: 'power3.out',
+      scrollTrigger: { trigger: '.story-timeline', start: 'top 80%' }
+    });
+
+    // ── Magnetic hover on feature cards
+    document.querySelectorAll('.feature-card').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r  = card.getBoundingClientRect();
+        const dx = (e.clientX - r.left - r.width  / 2) / r.width;
+        const dy = (e.clientY - r.top  - r.height / 2) / r.height;
+        gsap.to(card, { x: dx * 8, y: dy * 4 - 6, duration: 0.4, ease: 'power2.out', overwrite: true });
+      });
+      card.addEventListener('mouseleave', () => {
+        gsap.to(card, { x: 0, y: 0, duration: 0.6, ease: 'elastic.out(1, 0.5)', overwrite: true });
+      });
+    });
+
+    // ── Hamburger
+    const hamburger = document.querySelector('.hamburger');
+    const drawer    = document.querySelector('.nav-drawer');
+    hamburger?.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      drawer.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', hamburger.classList.contains('active'));
+    });
+  </script>
 </body>
 </html>

@@ -7,73 +7,595 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
-  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Ctext%20y=%22.9em%22%20font-size=%2290%22%3E🛒%3C/text%3E%3C/svg%3E" />
 
   <style>
-    /* ── Index-page scroll fix ─────────────────────────────── */
-    /* The global CSS locks overflow on html/body for other pages,
-       so we restore scrollability here and let .page grow freely. */
-    html, body {
-      overflow-x: hidden;   /* No horizontal bleed */
-      overflow-y: auto;     /* Vertical scroll lives on the body */
-      height: auto;
-      width: 100%;
+    /* ═══════════════════════════════════════════════
+       RESETS & SCROLL
+    ═══════════════════════════════════════════════ */
+    html, body { overflow-x: hidden; overflow-y: auto; height: auto; width: 100%; cursor: none; }
+    .page { display: flex; flex-direction: column; min-height: 100vh; height: auto; overflow: visible; width: 100%; }
+
+    /* ═══════════════════════════════════════════════
+       GRAIN TEXTURE OVERLAY
+    ═══════════════════════════════════════════════ */
+    body::after {
+      content: ''; position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat; background-size: 128px;
     }
-    .page {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      height: auto;
-      overflow: visible;
-      width: 100%;
+
+    /* ═══════════════════════════════════════════════
+       CUSTOM CURSOR
+    ═══════════════════════════════════════════════ */
+    .cursor-dot {
+      position: fixed; top: 0; left: 0; z-index: 10000; pointer-events: none;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #fff; transform: translate(-50%, -50%);
+      transition: width 0.2s, height 0.2s, opacity 0.2s;
+      will-change: transform;
     }
-    /* Hero: fill viewport above the fold */
+    .cursor-ring {
+      position: fixed; top: 0; left: 0; z-index: 9999; pointer-events: none;
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.35);
+      transform: translate(-50%, -50%);
+      transition: width 0.35s, height 0.35s, border-color 0.35s, opacity 0.3s;
+      will-change: transform;
+    }
+    body:has(button:hover) .cursor-dot,
+    body:has(a:hover) .cursor-dot { width: 10px; height: 10px; }
+    body:has(button:hover) .cursor-ring,
+    body:has(a:hover) .cursor-ring { width: 52px; height: 52px; border-color: rgba(255,255,255,0.6); }
+    body:has(.product-card:hover) .cursor-ring { width: 60px; height: 60px; }
+
+    /* ═══════════════════════════════════════════════
+       AMBIENT ORBS
+    ═══════════════════════════════════════════════ */
+    .ambient-orb {
+      position: fixed; pointer-events: none; z-index: 0;
+      border-radius: 50%; filter: blur(140px); opacity: 0;
+    }
+    .orb-hero-left {
+      width: 800px; height: 800px; top: -300px; left: -200px;
+      background: radial-gradient(circle, rgba(255,255,255,0.045) 0%, transparent 60%);
+    }
+    .orb-hero-right {
+      width: 600px; height: 600px; top: -100px; right: -100px;
+      background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 60%);
+    }
+    .orb-products {
+      width: 700px; height: 700px; bottom: 200px; left: 50%; transform: translateX(-50%);
+      background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 60%);
+    }
+
+    /* ═══════════════════════════════════════════════
+       NAVBAR ENHANCEMENTS
+    ═══════════════════════════════════════════════ */
+    .navbar {
+      position: sticky !important; top: 0; z-index: 200;
+      transition: background 0.5s, box-shadow 0.5s, border-color 0.5s;
+    }
+    .navbar.scrolled {
+      background: rgba(3, 3, 3, 0.92) !important;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.05), 0 8px 40px rgba(0,0,0,0.6);
+    }
+    .nav-logo { opacity: 0; }
+    .nav-links li { opacity: 0; }
+    .nav-right { opacity: 0; }
+
+    /* ═══════════════════════════════════════════════
+       HERO — SPLIT EDITORIAL LAYOUT
+    ═══════════════════════════════════════════════ */
     .hero {
       min-height: calc(100vh - 80px);
-      flex: none;
-      padding-top: 0;
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: clamp(4rem, 8vh, 7rem) clamp(2rem, 6vw, 6rem) !important;
+      gap: clamp(2rem, 4vw, 5rem);
+      text-align: left !important;
+      flex: none !important;
+      position: relative;
     }
-    /* Products grid — constrain to viewport width */
-    .products-section {
-      flex: none;
-      width: 100%;
-      box-sizing: border-box;
+
+    .hero-left { display: flex; flex-direction: column; align-items: flex-start; }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.7rem;
+      font-size: 0.68rem; font-weight: 500; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--text-muted);
+      border: 1px solid var(--border); border-radius: var(--radius-pill);
+      padding: 0.45rem 1.2rem; margin-bottom: 2rem;
+      opacity: 0;
+      position: relative; overflow: hidden;
     }
-    .products-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      width: 100%;
+    .hero-eyebrow::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+      transform: translateX(-100%);
+      animation: shimmer-pill 3s ease 1.5s infinite;
     }
-    /* Contain images strictly within their card */
-    .product-img {
+    @keyframes shimmer-pill {
+      to { transform: translateX(100%); }
+    }
+    .eyebrow-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--text-muted); flex-shrink: 0;
+      animation: dot-breathe 2.5s ease infinite;
+    }
+    @keyframes dot-breathe { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.5)} }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 5.5vw, 6rem);
+      font-weight: 900; line-height: 1.08; letter-spacing: -0.05em;
+      max-width: 700px; margin-bottom: 0;
+      background: linear-gradient(160deg, #FFFFFF 0%, #666 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0;
+      /* Safety net: if JS fails, fade in after 1.5s */
+      animation: hero-fallback 0.01s 1.5s forwards;
+    }
+    @keyframes hero-fallback { to { opacity: 1; } }
+
+    .hero-sub {
+      max-width: 440px; margin: 2.2rem 0 0;
+      font-size: clamp(0.95rem, 1.2vw, 1.1rem); font-weight: 300;
+      line-height: 1.75; color: var(--text-muted);
+      opacity: 0;
+    }
+
+    .hero-cta {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      margin-top: 2.5rem; justify-content: flex-start !important;
+      opacity: 0;
+    }
+
+    .hero-stats {
+      display: flex; gap: 3rem; margin-top: 3rem;
+      padding-top: 2rem; border-top: 1px solid var(--border);
+      opacity: 0; width: 100%;
+    }
+    .hero-stat-num {
+      font-family: var(--font-display); font-size: 1.6rem; font-weight: 700;
+      letter-spacing: -0.03em; color: var(--text-light); line-height: 1;
+    }
+    .hero-stat-label {
+      font-size: 0.72rem; color: var(--text-muted); font-weight: 300;
+      letter-spacing: 0.02em; margin-top: 0.3rem;
+    }
+
+    /* ── HERO RIGHT: PRODUCT SHOWCASE ── */
+    .hero-right {
+      display: flex; align-items: center; justify-content: center;
+      position: relative; opacity: 0;
+    }
+
+    .showcase-wrap {
+      position: relative; width: min(440px, 90%);
+      aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Orbital rings */
+    .orbit-ring {
+      position: absolute; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.06);
+      animation: orbit-rotate 20s linear infinite;
+    }
+    .orbit-ring:nth-child(1) { width: 100%; height: 100%; animation-duration: 28s; }
+    .orbit-ring:nth-child(2) { width: 80%; height: 80%; animation-direction: reverse; animation-duration: 20s; }
+    .orbit-ring:nth-child(3) { width: 60%; height: 60%; animation-duration: 14s; }
+    @keyframes orbit-rotate { to { transform: rotate(360deg); } }
+
+    /* Ring dots */
+    .orbit-ring::before {
+      content: ''; position: absolute; top: -3px; left: 50%;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.5); transform: translateX(-50%);
+    }
+
+    .showcase-img-wrap {
+      position: relative; z-index: 2;
+      width: 65%; aspect-ratio: 1/1;
+      border-radius: var(--radius);
       overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 40px 100px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08);
+      animation: float-showcase 6s ease-in-out infinite;
+    }
+    @keyframes float-showcase {
+      0%,100% { transform: translateY(0) rotate(0deg); }
+      33%      { transform: translateY(-12px) rotate(0.5deg); }
+      66%      { transform: translateY(-6px) rotate(-0.3deg); }
+    }
+    .showcase-img-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+      filter: grayscale(15%) brightness(0.9);
+      transition: filter 0.6s;
+    }
+    .showcase-img-wrap:hover img { filter: grayscale(0%) brightness(1); }
+
+    /* Floating badge chips */
+    .badge-chip {
+      position: absolute; z-index: 3;
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(8,8,8,0.85);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-pill);
+      backdrop-filter: blur(20px);
+      font-size: 0.72rem; font-weight: 500;
+      color: var(--text-light); white-space: nowrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      opacity: 0; animation: float-badge 5s ease-in-out infinite;
+    }
+    .badge-chip .chip-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+    .chip-1 { top: 12%; right: -8%; animation-delay: 0s; }
+    .chip-2 { bottom: 18%; left: -10%; animation-delay: 1.5s; }
+    .chip-3 { top: 55%; right: -12%; animation-delay: 0.8s; }
+    @keyframes float-badge {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    /* ═══════════════════════════════════════════════
+       MARQUEE STRIP
+    ═══════════════════════════════════════════════ */
+    .marquee-strip {
+      position: relative; z-index: 1; overflow: hidden;
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 1.1rem 0;
+      background: rgba(255,255,255,0.012);
+      opacity: 0;
+    }
+    .marquee-strip::before, .marquee-strip::after {
+      content: ''; position: absolute; top: 0; bottom: 0; width: 120px; z-index: 2; pointer-events: none;
+    }
+    .marquee-strip::before { left: 0; background: linear-gradient(to right, var(--bg), transparent); }
+    .marquee-strip::after  { right: 0; background: linear-gradient(to left, var(--bg), transparent); }
+
+    .marquee-inner {
+      display: flex; gap: 0; width: max-content;
+      animation: marquee-scroll 30s linear infinite;
+    }
+    @keyframes marquee-scroll { to { transform: translateX(-50%); } }
+
+    .marquee-item {
+      display: flex; align-items: center; gap: 1.5rem;
+      padding: 0 2rem;
+      font-size: 0.72rem; font-weight: 500; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .marquee-sep {
+      width: 4px; height: 4px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════════════════
+       PRODUCTS SECTION — EDITORIAL UPGRADE
+    ═══════════════════════════════════════════════ */
+    .products-section {
+      position: relative; z-index: 1;
+      padding: clamp(4rem, 7vh, 6rem) clamp(1.5rem, 5vw, 5rem) clamp(4rem, 7vh, 6rem);
+      flex-shrink: 0; width: 100%; box-sizing: border-box;
+    }
+
+    /* Section header */
+    .products-header {
+      display: flex; align-items: flex-end; justify-content: space-between;
+      margin-bottom: 2.5rem; gap: 2rem; flex-wrap: wrap;
+    }
+    .products-header-left { display: flex; flex-direction: column; gap: 0.6rem; }
+    .section-overline {
+      font-size: 0.65rem; font-weight: 500; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--text-muted);
+    }
+    .section-title {
+      font-family: var(--font-display); font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 700; letter-spacing: -0.03em; color: var(--text-light);
+      line-height: 1.1;
+    }
+
+    /* Filter pills */
+    .filter-pills {
+      display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;
+    }
+    .filter-pill {
+      padding: 0.4rem 1.1rem;
+      font-size: 0.7rem; font-weight: 500; letter-spacing: 0.06em;
+      color: var(--text-muted); background: transparent;
+      border: 1px solid var(--border); border-radius: var(--radius-pill);
+      cursor: pointer; transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+    .filter-pill:hover { border-color: rgba(255,255,255,0.2); color: var(--text-light); }
+    .filter-pill.active {
+      background: var(--text-light); color: var(--bg);
+      border-color: var(--text-light);
+    }
+
+    /* Product grid — 4 cols with featured card */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(0.8rem, 1.5vw, 1.2rem);
       width: 100%;
+    }
+
+    /* ── FEATURED CARD (first) ── */
+    .product-card.featured {
+      grid-column: span 2;
+      flex-direction: row;
+      gap: 0; padding: 0;
+      overflow: hidden;
+    }
+    .product-card.featured .product-img {
+      width: 55%; aspect-ratio: auto; flex-shrink: 0;
+      border-radius: 0; border-right: 1px solid var(--border);
+    }
+    .product-card.featured .product-img img { height: 100%; }
+    .featured-body {
+      padding: clamp(1.5rem, 2.5vw, 2.2rem);
+      display: flex; flex-direction: column; justify-content: space-between; flex: 1;
+    }
+    .featured-label {
+      font-size: 0.6rem; font-weight: 500; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.8rem;
+    }
+    .featured-body .product-title {
+      font-size: clamp(1.2rem, 2vw, 1.6rem); line-height: 1.2; margin-bottom: 0.8rem;
+    }
+    .featured-body .product-desc {
+      font-size: 0.82rem; color: var(--text-muted); font-weight: 300;
+      line-height: 1.6; margin-bottom: 1.5rem;
+    }
+
+    /* ── STANDARD CARDS ── */
+    .product-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: clamp(0.8rem, 1.2vw, 1.1rem);
+      display: flex; flex-direction: column; gap: 0.8rem;
+      transition: border-color 0.5s cubic-bezier(0.16,1,0.3,1),
+                  box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
+                  background 0.5s;
+      cursor: pointer; position: relative; overflow: hidden;
+      opacity: 0; transform: translateY(30px);
+    }
+
+    /* Spotlight hover effect */
+    .product-card .card-spotlight {
+      position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+      opacity: 0; transition: opacity 0.3s;
+      background: radial-gradient(circle at var(--mx,50%) var(--my,50%),
+        rgba(255,255,255,0.07) 0%, transparent 65%);
+    }
+    .product-card:hover .card-spotlight { opacity: 1; }
+    .product-card:hover {
+      border-color: rgba(255,255,255,0.1);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+    }
+
+    /* Top shine line on hover */
+    .product-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent);
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .product-card:hover::before { opacity: 1; }
+
+    /* Card index number */
+    .card-index {
+      position: absolute; top: 1rem; left: 1rem; z-index: 1;
+      font-family: var(--font-display); font-size: 0.6rem; font-weight: 700;
+      color: rgba(255,255,255,0.12); letter-spacing: 0.05em;
+    }
+    .product-card.featured .card-index { display: none; }
+
+    .product-img {
+      width: 100%; aspect-ratio: 4/3;
+      border-radius: 14px; overflow: hidden;
+      background: #111; position: relative;
     }
     .product-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      filter: grayscale(25%) brightness(0.88);
+      transition: filter 0.6s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.6s cubic-bezier(0.16,1,0.3,1);
     }
+    .product-card:hover .product-img img {
+      filter: grayscale(0%) brightness(1.0);
+      transform: scale(1.04);
+    }
+
+    .product-meta {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+    }
+    .product-title {
+      font-family: var(--font-display); font-size: 0.92rem;
+      font-weight: 500; letter-spacing: -0.02em; color: var(--text-light); line-height: 1.3;
+    }
+    .badge-ai {
+      font-size: 0.58rem; padding: 3px 9px; flex-shrink: 0;
+    }
+
+    .product-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: auto;
+    }
+    .product-price {
+      font-family: var(--font-display);
+      font-size: 1rem; font-weight: 500; color: var(--text-light);
+      letter-spacing: -0.02em;
+    }
+
+    /* Enhanced add-to-cart button */
+    .add-to-cart {
+      display: flex; align-items: center; gap: 5px;
+      padding: 0.48rem 1rem;
+      font-size: 0.7rem; font-weight: 500;
+      color: var(--text-light); background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-pill);
+      cursor: pointer; transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+      position: relative; overflow: hidden;
+    }
+    .add-to-cart::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+      transform: translateX(-100%); transition: transform 0.5s;
+    }
+    .add-to-cart:hover::before { transform: translateX(100%); }
+    .add-to-cart:hover { background: var(--text-light); color: var(--bg); border-color: var(--text-light); }
+    .add-to-cart.added { background: #fff; color: #000; border-color: #fff; }
+
+    .stars { display: flex; gap: 2px; }
+    .star { font-size: 0.65rem; color: rgba(255,255,255,0.1); }
+    .star.filled { color: rgba(255,255,255,0.75); }
+
+    /* ═══════════════════════════════════════════════
+       PREMIUM FOOTER CTA BAND
+    ═══════════════════════════════════════════════ */
+    .cta-band {
+      position: relative; z-index: 1;
+      margin: 0 clamp(1.5rem, 5vw, 5rem) clamp(3rem, 5vh, 5rem);
+      padding: clamp(3rem, 5vw, 4.5rem);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      background: rgba(255,255,255,0.02);
+      display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+      flex-wrap: wrap; overflow: hidden;
+      opacity: 0; transform: translateY(30px);
+    }
+    .cta-band::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.12), transparent);
+    }
+    /* Decorative large number */
+    .cta-band::after {
+      content: '∞'; position: absolute; right: clamp(3rem, 6vw, 6rem); top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-display); font-size: clamp(6rem, 12vw, 11rem);
+      font-weight: 900; letter-spacing: -0.05em;
+      color: rgba(255,255,255,0.025); pointer-events: none; line-height: 1;
+      user-select: none;
+    }
+    .cta-band-text { position: relative; z-index: 1; }
+    .cta-band-text h2 {
+      font-family: var(--font-display); font-size: clamp(1.5rem, 3vw, 2.5rem);
+      font-weight: 700; letter-spacing: -0.03em; color: var(--text-light);
+      margin-bottom: 0.6rem; line-height: 1.15;
+    }
+    .cta-band-text p {
+      font-size: 0.9rem; color: var(--text-muted); font-weight: 300; max-width: 400px;
+    }
+    .cta-band-actions { display: flex; gap: 1rem; flex-wrap: wrap; position: relative; z-index: 1; }
+
+    /* ═══════════════════════════════════════════════
+       ENHANCED FOOTER
+    ═══════════════════════════════════════════════ */
+    .footer-bar {
+      position: relative; z-index: 10;
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 1.4rem clamp(1.5rem, 5vw, 5rem);
+      border-top: 1px solid var(--border);
+      background: rgba(5,5,5,0.5); backdrop-filter: blur(12px);
+    }
+    .footer-brand {
+      font-family: var(--font-display); font-size: 1rem; font-weight: 700;
+      letter-spacing: -0.02em; color: var(--text-light);
+    }
+    .footer-brand span { color: var(--text-muted); font-weight: 300; }
+    .footer-bar p { font-size: 0.75rem; color: var(--text-muted); text-align: center; }
+    .footer-links { display: flex; gap: 2rem; list-style: none; justify-content: flex-end; }
+    .footer-links a { font-size: 0.75rem; color: var(--text-muted); text-decoration: none;
+      transition: color 0.3s; }
+    .footer-links a:hover { color: var(--text-light); }
+
+    /* ═══════════════════════════════════════════════
+       HAMBURGER
+    ═══════════════════════════════════════════════ */
+    .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 7px); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -7px); }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════ */
+    @media (max-width: 1100px) {
+      .products-grid { grid-template-columns: repeat(3, 1fr); }
+      .product-card.featured { grid-column: span 2; }
+    }
+    @media (max-width: 860px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; padding: 5rem 1.5rem 3rem !important; }
+      .hero-right { display: none; }
+      .hero h1 { font-size: clamp(2.5rem, 7vw, 3.5rem); }
+      .products-grid { grid-template-columns: repeat(2, 1fr); }
+      .product-card.featured { grid-column: span 2; flex-direction: column; }
+      .product-card.featured .product-img { width: 100%; aspect-ratio: 16/9; border-right: none; border-bottom: 1px solid var(--border); }
+      .hamburger { display: flex !important; }
+      .nav-links  { display: none !important; }
+      .nav-drawer { display: block !important; }
+      .cta-band { flex-direction: column; }
+      .footer-bar { grid-template-columns: 1fr; gap: 1rem; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
+    @media (max-width: 560px) {
+      .products-grid { grid-template-columns: 1fr; }
+      .product-card.featured { grid-column: span 1; }
+    }
+    @media (min-width: 861px) { .hamburger { display: none; } }
+
+    /* ═══════════════════════════════════════════════
+       SCROLL TO TOP BUTTON
+    ═══════════════════════════════════════════════ */
+    .scroll-top {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 500;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+      backdrop-filter: blur(12px); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); font-size: 1rem;
+      opacity: 0; transform: translateY(10px);
+      transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+    .scroll-top.show { opacity: 1; transform: translateY(0); }
+    .scroll-top:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.15); color: var(--text-light); }
   </style>
 </head>
 <body>
 
+  <!-- Custom Cursor -->
+  <div class="cursor-dot" id="cursor-dot"></div>
+  <div class="cursor-ring" id="cursor-ring"></div>
+
+  <!-- Background -->
   <div class="bg-mesh" aria-hidden="true"></div>
   <canvas id="particles-canvas" aria-hidden="true"></canvas>
+  <div class="ambient-orb orb-hero-left" aria-hidden="true"></div>
+  <div class="ambient-orb orb-hero-right" aria-hidden="true"></div>
+  <div class="ambient-orb orb-products" aria-hidden="true"></div>
 
-  <div class="page page-fade">
+  <!-- Scroll to top -->
+  <button class="scroll-top" id="scroll-top" aria-label="Scroll to top">↑</button>
 
+  <div class="page">
+
+    <!-- ── NAVBAR ── -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
       <a href="index.html" class="nav-logo">Nova<span>Cart</span> AI</a>
-
       <ul class="nav-links" role="list">
-        <li><a href="index.html">Home</a></li>
+        <li><a href="index.html" class="active">Home</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
-
       <div class="nav-right">
         <button class="cart-btn" aria-label="Shopping cart">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -97,234 +619,332 @@
       </ul>
     </div>
 
+    <!-- ── HERO ── -->
     <section class="hero" aria-labelledby="hero-heading">
-      <div class="hero-content">
-        <p class="hero-eyebrow">✦ AI-Powered Commerce Platform</p>
-        <h1 id="hero-heading">The Future of<br>Intelligent Commerce</h1>
+      <div class="hero-left">
+        <p class="hero-eyebrow">
+          <span class="eyebrow-dot"></span>
+          AI-Powered Commerce Platform
+        </p>
+        <h1 id="hero-heading">The Future<br>of Intelligent<br>Commerce</h1>
         <p class="hero-sub">
           NovaCart AI harnesses next-generation machine learning to curate,
-          personalize, and deliver the world's finest products.
+          personalize, and deliver the world's finest products — at superhuman speed.
         </p>
         <div class="hero-cta">
           <a href="#products" class="btn-primary">Explore Products</a>
-          <a href="about.html" class="btn-outline">Our Vision</a>
+          <a href="about.html" class="btn-outline">Our Vision →</a>
+        </div>
+        <div class="hero-stats">
+          <div>
+            <div class="hero-stat-num" data-target="2.4" data-suffix="M+">2.4M+</div>
+            <div class="hero-stat-label">Customers Served</div>
+          </div>
+          <div>
+            <div class="hero-stat-num" data-target="180" data-suffix="">180</div>
+            <div class="hero-stat-label">Cities Worldwide</div>
+          </div>
+          <div>
+            <div class="hero-stat-num" data-target="4.96" data-suffix="★">4.96★</div>
+            <div class="hero-stat-label">Average Rating</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right" aria-hidden="true">
+        <div class="showcase-wrap">
+          <!-- Orbital rings -->
+          <div class="orbit-ring"></div>
+          <div class="orbit-ring"></div>
+          <div class="orbit-ring"></div>
+
+          <!-- Main product image -->
+          <div class="showcase-img-wrap">
+            <img src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&q=80&w=700" alt="Nova AuraX Headphones showcase" />
+          </div>
+
+          <!-- Floating badge chips -->
+          <div class="badge-chip chip-1">
+            <div class="chip-dot" style="background:#a8edbb;box-shadow:0 0 8px rgba(168,237,187,0.5)"></div>
+            AI Audio Engine
+          </div>
+          <div class="badge-chip chip-2">
+            <div class="chip-dot" style="background:#89c4f4;box-shadow:0 0 8px rgba(137,196,244,0.5)"></div>
+            Neural Processing
+          </div>
+          <div class="badge-chip chip-3">
+            <div class="chip-dot" style="background:#f9a8d4;box-shadow:0 0 8px rgba(249,168,212,0.5)"></div>
+            48hr Battery
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="products-section" id="products" aria-labelledby="products-label">
-      <p class="section-label" id="products-label">Featured AI Products</p>
+    <!-- ── MARQUEE STRIP ── -->
+    <div class="marquee-strip" aria-hidden="true">
+      <div class="marquee-inner">
+        <!-- Repeated twice for seamless loop -->
+        <div class="marquee-item">AI Commerce <span class="marquee-sep"></span> Lightning Delivery <span class="marquee-sep"></span> 2.4M+ Customers <span class="marquee-sep"></span> 180 Cities <span class="marquee-sep"></span> 99.9% Uptime <span class="marquee-sep"></span> Blockchain Payments <span class="marquee-sep"></span> Neural Recommendations <span class="marquee-sep"></span> Same-Day Delivery <span class="marquee-sep"></span></div>
+        <div class="marquee-item">AI Commerce <span class="marquee-sep"></span> Lightning Delivery <span class="marquee-sep"></span> 2.4M+ Customers <span class="marquee-sep"></span> 180 Cities <span class="marquee-sep"></span> 99.9% Uptime <span class="marquee-sep"></span> Blockchain Payments <span class="marquee-sep"></span> Neural Recommendations <span class="marquee-sep"></span> Same-Day Delivery <span class="marquee-sep"></span></div>
+      </div>
+    </div>
+
+    <!-- ── PRODUCTS ── -->
+    <section class="products-section" id="products" aria-labelledby="products-heading">
+
+      <div class="products-header">
+        <div class="products-header-left">
+          <p class="section-overline">Curated by AI, Crafted for You</p>
+          <h2 class="section-title" id="products-heading">Featured<br>Products</h2>
+        </div>
+        <div class="filter-pills" role="tablist" aria-label="Product categories">
+          <button class="filter-pill active" data-filter="all">All</button>
+          <button class="filter-pill" data-filter="audio">Audio</button>
+          <button class="filter-pill" data-filter="wearable">Wearable</button>
+          <button class="filter-pill" data-filter="display">Display</button>
+          <button class="filter-pill" data-filter="home">Home</button>
+        </div>
+      </div>
 
       <div class="products-grid" role="list">
 
-        <article class="product-card" role="listitem">
+        <!-- FEATURED CARD -->
+        <article class="product-card featured" role="listitem" data-category="audio">
           <div class="product-img">
-            <img src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&q=80&w=600" alt="Nova AuraX">
+            <img src="https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&q=80&w=700" alt="Nova AuraX Headphones">
           </div>
-          <div class="product-meta">
-            <h3 class="product-title">Nova AuraX Headphones</h3>
-            <span class="badge-ai">AI Audio</span>
-          </div>
-          <div class="stars">
-            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
-          </div>
-          <div class="product-footer">
-            <span class="product-price">$349</span>
-            <button class="add-to-cart">+ Add to Cart</button>
+          <div class="featured-body">
+            <div>
+              <p class="featured-label">⟐ Editor's Pick</p>
+              <h3 class="product-title">Nova AuraX<br>Headphones</h3>
+              <p class="product-desc">Our most advanced AI audio experience yet. Adaptive sound modelling that responds to your environment in real time.</p>
+              <div class="stars" style="margin-bottom:1.2rem">
+                <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
+              </div>
+            </div>
+            <div class="product-footer">
+              <span class="product-price">$349</span>
+              <button class="add-to-cart">+ Add to Cart</button>
+            </div>
           </div>
         </article>
 
-        <article class="product-card" role="listitem">
+        <!-- CARD 02 -->
+        <article class="product-card" role="listitem" data-category="wearable">
+          <div class="card-spotlight"></div>
+          <span class="card-index">02</span>
           <div class="product-img">
-            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=600" alt="SynthWatch">
+            <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=600" alt="SynthWatch Pro">
           </div>
           <div class="product-meta">
             <h3 class="product-title">SynthWatch Pro Ultra</h3>
             <span class="badge-ai">AI Health</span>
           </div>
-          <div class="stars">
-            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
-          </div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span></div>
           <div class="product-footer">
             <span class="product-price">$599</span>
-            <button class="add-to-cart">+ Add to Cart</button>
+            <button class="add-to-cart">+ Add</button>
           </div>
         </article>
 
-        <article class="product-card" role="listitem">
+        <!-- CARD 03 -->
+        <article class="product-card" role="listitem" data-category="display">
+          <div class="card-spotlight"></div>
+          <span class="card-index">03</span>
           <div class="product-img">
-            <img src="https://images.unsplash.com/photo-1585560034603-28248283b288?auto=format&fit=crop&q=80&w=600" alt="NovaPad">
+            <img src="https://images.unsplash.com/photo-1585560034603-28248283b288?auto=format&fit=crop&q=80&w=600" alt="NovaPad X">
           </div>
           <div class="product-meta">
             <h3 class="product-title">NovaPad X Tablet</h3>
             <span class="badge-ai">AI Display</span>
           </div>
-          <div class="stars">
-            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
-          </div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span></div>
           <div class="product-footer">
             <span class="product-price">$1,199</span>
-            <button class="add-to-cart">+ Add to Cart</button>
+            <button class="add-to-cart">+ Add</button>
           </div>
         </article>
 
-        <article class="product-card" role="listitem">
+        <!-- CARD 04 -->
+        <article class="product-card" role="listitem" data-category="display">
+          <div class="card-spotlight"></div>
+          <span class="card-index">04</span>
           <div class="product-img">
-            <img src="https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?auto=format&fit=crop&q=80&w=600" alt="VR Kit">
+            <img src="https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?auto=format&fit=crop&q=80&w=600" alt="HoloGamer VR">
           </div>
           <div class="product-meta">
             <h3 class="product-title">HoloGamer VR Kit</h3>
             <span class="badge-ai">AI Vision</span>
           </div>
-          <div class="stars">
-            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
-          </div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span></div>
           <div class="product-footer">
             <span class="product-price">$799</span>
-            <button class="add-to-cart">+ Add to Cart</button>
+            <button class="add-to-cart">+ Add</button>
           </div>
         </article>
 
-        <article class="product-card" role="listitem">
+        <!-- CARD 05 -->
+        <article class="product-card" role="listitem" data-category="display">
+          <div class="card-spotlight"></div>
+          <span class="card-index">05</span>
           <div class="product-img">
-            <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=600" alt="Camera">
+            <img src="https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&q=80&w=600" alt="LensAI Camera">
           </div>
           <div class="product-meta">
             <h3 class="product-title">LensAI Pro Camera</h3>
             <span class="badge-ai">AI Optics</span>
           </div>
-          <div class="stars">
-            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
-          </div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span></div>
           <div class="product-footer">
             <span class="product-price">$2,499</span>
-            <button class="add-to-cart">+ Add to Cart</button>
+            <button class="add-to-cart">+ Add</button>
           </div>
         </article>
 
-        <article class="product-card" role="listitem">
+        <!-- CARD 06 -->
+        <article class="product-card" role="listitem" data-category="audio">
+          <div class="card-spotlight"></div>
+          <span class="card-index">06</span>
           <div class="product-img">
-            <img src="https://images.unsplash.com/photo-1589492477829-5e65395b66cc?auto=format&fit=crop&q=80&w=600" alt="Speaker">
+            <img src="https://images.unsplash.com/photo-1589492477829-5e65395b66cc?auto=format&fit=crop&q=80&w=600" alt="Orion AI Speaker">
           </div>
           <div class="product-meta">
             <h3 class="product-title">Orion AI Speaker</h3>
             <span class="badge-ai">AI Voice</span>
           </div>
-          <div class="stars">
-            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
-          </div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span></div>
           <div class="product-footer">
             <span class="product-price">$449</span>
-            <button class="add-to-cart">+ Add to Cart</button>
+            <button class="add-to-cart">+ Add</button>
           </div>
         </article>
 
-        <article class="product-card" role="listitem">
+        <!-- CARD 07 -->
+        <article class="product-card" role="listitem" data-category="home">
+          <div class="card-spotlight"></div>
+          <span class="card-index">07</span>
           <div class="product-img">
-            <img src="https://images.unsplash.com/photo-1507582020474-9a35b7d455d9?auto=format&fit=crop&q=80&w=600" alt="AI Drone">
+            <img src="https://images.unsplash.com/photo-1507582020474-9a35b7d455d9?auto=format&fit=crop&q=80&w=600" alt="AeroBot Drone">
           </div>
           <div class="product-meta">
             <h3 class="product-title">AeroBot Nano Drone</h3>
             <span class="badge-ai">AI Flight</span>
           </div>
-          <div class="stars">
-            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
-          </div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span></div>
           <div class="product-footer">
             <span class="product-price">$899</span>
-            <button class="add-to-cart">+ Add to Cart</button>
+            <button class="add-to-cart">+ Add</button>
           </div>
         </article>
 
-        <article class="product-card" role="listitem">
+        <!-- CARD 08 -->
+        <article class="product-card" role="listitem" data-category="home">
+          <div class="card-spotlight"></div>
+          <span class="card-index">08</span>
           <div class="product-img">
-            <img src="https://images.unsplash.com/photo-1558089687-f282ffcbc126?auto=format&fit=crop&q=80&w=600" alt="Smart Thermostat">
+            <img src="https://images.unsplash.com/photo-1558089687-f282ffcbc126?auto=format&fit=crop&q=80&w=600" alt="Climate Core">
           </div>
           <div class="product-meta">
             <h3 class="product-title">Climate Core Hub</h3>
             <span class="badge-ai">AI Home</span>
           </div>
-          <div class="stars">
-            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span>
-          </div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span></div>
           <div class="product-footer">
             <span class="product-price">$249</span>
-            <button class="add-to-cart">+ Add to Cart</button>
+            <button class="add-to-cart">+ Add</button>
           </div>
         </article>
 
-        <article class="product-card" role="listitem">
+        <!-- CARD 09 -->
+        <article class="product-card" role="listitem" data-category="display">
+          <div class="card-spotlight"></div>
+          <span class="card-index">09</span>
           <div class="product-img">
-            <img src="https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=600" alt="Ergo Keyboard">
+            <img src="https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=600" alt="Tactile Keyboard">
           </div>
           <div class="product-meta">
             <h3 class="product-title">Tactile AI Keyboard</h3>
             <span class="badge-ai">AI Typing</span>
           </div>
-          <div class="stars">
-            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
-          </div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span></div>
           <div class="product-footer">
             <span class="product-price">$199</span>
-            <button class="add-to-cart">+ Add to Cart</button>
+            <button class="add-to-cart">+ Add</button>
           </div>
         </article>
 
-        <article class="product-card" role="listitem">
+        <!-- CARD 10 -->
+        <article class="product-card" role="listitem" data-category="display">
+          <div class="card-spotlight"></div>
+          <span class="card-index">10</span>
           <div class="product-img">
-            <img src="https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80&w=600" alt="Workspace Monitor">
+            <img src="https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80&w=600" alt="UltraView Monitor">
           </div>
           <div class="product-meta">
             <h3 class="product-title">UltraView 5K Canvas</h3>
             <span class="badge-ai">AI Color</span>
           </div>
-          <div class="stars">
-            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
-          </div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span></div>
           <div class="product-footer">
             <span class="product-price">$1,499</span>
-            <button class="add-to-cart">+ Add to Cart</button>
+            <button class="add-to-cart">+ Add</button>
           </div>
         </article>
 
-        <article class="product-card" role="listitem">
+        <!-- CARD 11 -->
+        <article class="product-card" role="listitem" data-category="audio">
+          <div class="card-spotlight"></div>
+          <span class="card-index">11</span>
           <div class="product-img">
-            <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&q=80&w=600" alt="Earbuds">
+            <img src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&q=80&w=600" alt="Quantum Pods">
           </div>
           <div class="product-meta">
             <h3 class="product-title">Quantum Pods</h3>
-            <span class="badge-ai">AI Noise Canceling</span>
+            <span class="badge-ai">AI NC</span>
           </div>
-          <div class="stars">
-            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span>
-          </div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span></div>
           <div class="product-footer">
             <span class="product-price">$199</span>
-            <button class="add-to-cart">+ Add to Cart</button>
+            <button class="add-to-cart">+ Add</button>
           </div>
         </article>
 
-        <article class="product-card" role="listitem">
+        <!-- CARD 12 -->
+        <article class="product-card" role="listitem" data-category="wearable">
+          <div class="card-spotlight"></div>
+          <span class="card-index">12</span>
           <div class="product-img">
-            <img src="https://images.unsplash.com/photo-1576678927484-cc907957088c?auto=format&fit=crop&q=80&w=600" alt="Fitness Device">
+            <img src="https://images.unsplash.com/photo-1576678927484-cc907957088c?auto=format&fit=crop&q=80&w=600" alt="Pulse Tracker">
           </div>
           <div class="product-meta">
             <h3 class="product-title">Pulse Form Tracker</h3>
             <span class="badge-ai">AI Fitness</span>
           </div>
-          <div class="stars">
-            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
-          </div>
+          <div class="stars"><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span></div>
           <div class="product-footer">
             <span class="product-price">$299</span>
-            <button class="add-to-cart">+ Add to Cart</button>
+            <button class="add-to-cart">+ Add</button>
           </div>
         </article>
 
       </div>
     </section>
 
-    <footer class="footer-bar">
+    <!-- ── CTA BAND ── -->
+    <div class="cta-band" aria-labelledby="cta-heading">
+      <div class="cta-band-text">
+        <h2 id="cta-heading">Ready to experience<br>the future of shopping?</h2>
+        <p>Join 2.4 million customers already using NovaCart AI to discover and own the world's finest products.</p>
+      </div>
+      <div class="cta-band-actions">
+        <a href="contact.html" class="btn-primary">Get Started Free</a>
+        <a href="about.html" class="btn-outline">Learn More</a>
+      </div>
+    </div>
+
+    <!-- ── FOOTER ── -->
+    <footer class="footer-bar" role="contentinfo">
+      <div class="footer-brand">Nova<span>Cart</span> AI</div>
       <p>© 2026 NovaCart AI — All rights reserved.</p>
       <ul class="footer-links">
         <li><a href="about.html">About</a></li>
@@ -333,8 +953,254 @@
       </ul>
     </footer>
 
-  </div>
+  </div><!-- /.page -->
 
+  <!-- GSAP -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="script.js"></script>
+
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* ─────────────────────────────────────────
+       CUSTOM CURSOR
+    ───────────────────────────────────────── */
+    const dot  = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      gsap.set(dot, { x: mx, y: my });
+    });
+    // Ring follows with lag
+    gsap.ticker.add(() => {
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      gsap.set(ring, { x: rx, y: ry });
+    });
+    document.addEventListener('mouseleave', () => {
+      gsap.to([dot, ring], { opacity: 0, duration: 0.3 });
+    });
+    document.addEventListener('mouseenter', () => {
+      gsap.to([dot, ring], { opacity: 1, duration: 0.3 });
+    });
+
+    /* ─────────────────────────────────────────
+       AMBIENT ORBS FADE IN
+    ───────────────────────────────────────── */
+    gsap.to('.ambient-orb', { opacity: 1, duration: 2.5, ease: 'power2.out', stagger: 0.3, delay: 0.5 });
+
+    /* ─────────────────────────────────────────
+       NAVBAR ENTRANCE
+    ───────────────────────────────────────── */
+    const navTl = gsap.timeline({ delay: 0.1 });
+    navTl.to('.nav-logo',     { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 0)
+         .from('.nav-logo',   { y: -12 }, 0)
+         .to('.nav-links li', { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: 'power3.out' }, 0.1)
+         .from('.nav-links li', { y: -10 }, 0.1)
+         .to('.nav-right',    { opacity: 1, duration: 0.5, ease: 'power3.out' }, 0.2);
+
+    /* Navbar scroll state */
+    window.addEventListener('scroll', () => {
+      document.querySelector('.navbar').classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    /* ─────────────────────────────────────────
+       HERO ENTRANCE — simple, bulletproof
+    ───────────────────────────────────────── */
+    const heroTl = gsap.timeline({ delay: 0.25 });
+    heroTl
+      // eyebrow pill
+      .fromTo('.hero-eyebrow',
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 0)
+      // h1 — simple fade+slide, no DOM manipulation, no span nesting
+      .fromTo('#hero-heading',
+        { opacity: 0, y: 36 },
+        { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out' }, 0.18)
+      // subtitle
+      .fromTo('.hero-sub',
+        { opacity: 0, y: 22 },
+        { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, 0.42)
+      // CTA buttons
+      .fromTo('.hero-cta',
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 0.58)
+      // stats row
+      .fromTo('.hero-stats',
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, 0.72)
+      // right showcase panel
+      .fromTo('.hero-right',
+        { opacity: 0, x: 60 },
+        { opacity: 1, x: 0, duration: 1.1, ease: 'power3.out' }, 0.2)
+      // floating badge chips
+      .fromTo('.badge-chip',
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.6, stagger: 0.18, ease: 'power3.out' }, 0.85);
+
+    /* ─────────────────────────────────────────
+       MARQUEE
+    ───────────────────────────────────────── */
+    gsap.to('.marquee-strip', {
+      opacity: 1, duration: 1, ease: 'power2.out',
+      scrollTrigger: { trigger: '.marquee-strip', start: 'top 90%' }
+    });
+
+    /* ─────────────────────────────────────────
+       PRODUCTS HEADER
+    ───────────────────────────────────────── */
+    gsap.from('.products-header', {
+      opacity: 0, y: 30, duration: 0.9, ease: 'power3.out',
+      scrollTrigger: { trigger: '.products-header', start: 'top 85%' }
+    });
+
+    /* ─────────────────────────────────────────
+       PRODUCT CARDS — STAGGERED SCROLL REVEAL
+    ───────────────────────────────────────── */
+    const cards = gsap.utils.toArray('.product-card');
+    cards.forEach((card, i) => {
+      gsap.to(card, {
+        opacity: 1, y: 0, duration: 0.8,
+        ease: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        delay: (i % 4) * 0.1,
+        scrollTrigger: {
+          trigger: card, start: 'top 88%', once: true
+        }
+      });
+    });
+
+    /* ─────────────────────────────────────────
+       CARD SPOTLIGHT — Mouse tracking
+    ───────────────────────────────────────── */
+    document.querySelectorAll('.product-card:not(.featured)').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const r  = card.getBoundingClientRect();
+        const mx = ((e.clientX - r.left) / r.width  * 100).toFixed(1);
+        const my = ((e.clientY - r.top)  / r.height * 100).toFixed(1);
+        card.style.setProperty('--mx', mx + '%');
+        card.style.setProperty('--my', my + '%');
+      });
+
+      // Magnetic tilt
+      card.addEventListener('mousemove', e => {
+        const r  = card.getBoundingClientRect();
+        const dx = (e.clientX - r.left - r.width  / 2) / r.width;
+        const dy = (e.clientY - r.top  - r.height / 2) / r.height;
+        gsap.to(card, {
+          rotateY: dx * 6, rotateX: -dy * 4,
+          transformPerspective: 800,
+          duration: 0.5, ease: 'power2.out', overwrite: true
+        });
+      });
+      card.addEventListener('mouseleave', () => {
+        gsap.to(card, {
+          rotateY: 0, rotateX: 0,
+          duration: 0.7, ease: 'elastic.out(1, 0.5)', overwrite: true
+        });
+      });
+    });
+
+    /* ─────────────────────────────────────────
+       CTA BAND
+    ───────────────────────────────────────── */
+    gsap.to('.cta-band', {
+      opacity: 1, y: 0, duration: 1, ease: 'power3.out',
+      scrollTrigger: { trigger: '.cta-band', start: 'top 85%' }
+    });
+
+    /* ─────────────────────────────────────────
+       FILTER PILLS
+    ───────────────────────────────────────── */
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        const filter = pill.dataset.filter;
+
+        document.querySelectorAll('.product-card').forEach(card => {
+          const match = filter === 'all' || card.dataset.category === filter;
+          gsap.to(card, {
+            opacity: match ? 1 : 0.2,
+            scale: match ? 1 : 0.97,
+            duration: 0.4, ease: 'power2.out'
+          });
+        });
+      });
+    });
+
+    /* ─────────────────────────────────────────
+       CART — with spring pop animation
+    ───────────────────────────────────────── */
+    let cartCount = 0;
+    const cartCountEl = document.querySelector('.cart-count');
+
+    document.querySelectorAll('.add-to-cart').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (btn.classList.contains('added')) return;
+
+        // Button morph
+        const orig = btn.textContent;
+        btn.classList.add('added');
+        btn.textContent = '✓ Added';
+
+        // Spring animation on button
+        gsap.fromTo(btn, { scale: 0.9 }, { scale: 1, duration: 0.5, ease: 'elastic.out(1, 0.4)' });
+
+        // Cart count update
+        cartCount++;
+        cartCountEl.textContent = cartCount;
+        cartCountEl.classList.add('show');
+        gsap.fromTo(cartCountEl,
+          { scale: 0.5 },
+          { scale: 1, duration: 0.5, ease: 'elastic.out(1, 0.4)' }
+        );
+
+        // Cart icon shake
+        gsap.to('.cart-btn svg', {
+          rotate: 15, duration: 0.1, yoyo: true, repeat: 5,
+          ease: 'power1.inOut', onComplete: () => gsap.set('.cart-btn svg', { rotate: 0 })
+        });
+
+        setTimeout(() => {
+          btn.classList.remove('added');
+          btn.textContent = orig;
+        }, 2000);
+      });
+    });
+
+    /* ─────────────────────────────────────────
+       SCROLL TO TOP
+    ───────────────────────────────────────── */
+    const scrollTopBtn = document.getElementById('scroll-top');
+    window.addEventListener('scroll', () => {
+      scrollTopBtn.classList.toggle('show', window.scrollY > 500);
+    });
+    scrollTopBtn.addEventListener('click', () => {
+      gsap.to(window, { scrollTo: 0, duration: 1, ease: 'power3.inOut' });
+    });
+
+    /* ─────────────────────────────────────────
+       HAMBURGER
+    ───────────────────────────────────────── */
+    const hamburger = document.querySelector('.hamburger');
+    const drawer    = document.querySelector('.nav-drawer');
+    hamburger?.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      drawer.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', hamburger.classList.contains('active'));
+    });
+
+    /* ─────────────────────────────────────────
+       SMOOTH SCROLL for anchor links
+    ───────────────────────────────────────── */
+    document.querySelector('a[href="#products"]')?.addEventListener('click', e => {
+      e.preventDefault();
+      document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
+    });
+  </script>
 </body>
 </html>
